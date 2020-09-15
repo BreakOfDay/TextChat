@@ -36,6 +36,7 @@
 	<span id="status"></span>
 
 <script>
+	// ice : 두 단말이 서로 통신할 수 있는 최적의 경로를 찾을 수 있도록 도와주는 프레임워크
 	const config = {iceServers: [{urls: "stun:stun.1.google.com:19302"}]}; // google의 공개 stun 서버 중 하나
 	const pc = new RTCPeerConnection(config); // 로컬과 원격 피어 간 연결 나타내는 새로운 객체 생성 반환
 	const dc = pc.createDataChannel("chat", { negotiated: true, id: 0 }); // 원격 유저와 연결하는 신규 채널 생성 (채널이름, 설정 옵션)
@@ -79,13 +80,7 @@
 		sendFileButton.disabled = true;
 		
 		/* localConnection == pc */
-//		localConnection = new RTCPeerConnection();
-//		console.log('Created local peer connection object localConnection');
-		
 		/* sendChannel == dc */
-//		sendChannel = localConnection.createDataChannel('sendDataChannel');
-//		sendChannel.binaryType = 'arraybuffer';
-//		console.log('Created send data channel');
 		dc.binaryType = 'arraybuffer';
 		sendData();
 	}
@@ -136,14 +131,8 @@
 	
 	dc.onopen = function() { // 연결 및 데이터 요청(연결 성공했을 때, connected 됐을 때)
 		chat.select();
-	
-		/* (function() {
-			const readyState = dc.readyState;
-			if (readyState === 'open') {
-				sendData();
-			}
-		})(); */
 	} 
+	
 	function IsJsonString(str) {
 		  try {
 		    var json = JSON.parse(str);
@@ -152,6 +141,7 @@
 		    return false;
 		  }
 	}
+	
 	dc.onmessage = function(e) { // 요청 데이터 받아와 사용
 		
 		var arr;
@@ -162,7 +152,7 @@
 				fname = arr.filename;
 				fsize = arr.filesize;
 			} else {
-				log("<p style='margin: 5px; float: left; background: #d4d4d4;'>" + e.data + "</p><br>");				
+				log("<p style='margin: 5px; float: left; background: #d4d4d4;'>" + e.data + "</p><br>"); // JSON 타입 아닐 경우에는 일반 채팅이므로 채팅 log 출력
 			}
 		}
 		
@@ -213,7 +203,7 @@
 		})();
 		
 		pc.onicecandidate = function(e) { // 로컬 ice 에이전트가 시그널링 서버를 통해 원격 피어에게 메세지 전달할 때마다 발생
-			if (e.candidate) return; // candidate : 해당 candidate에 대한 네트워크 연결 정보.
+			if (e.candidate) return; // candidate : 해당 네트워크 연결 정보.
 			
 			offer.value = pc.localDescription.sdp; // sdp : session description protocol. 데이터의 해상도, 형식, 코덱 등 기술하는 표준이며 메타데이터
 			offer.select();
